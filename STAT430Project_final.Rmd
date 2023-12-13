@@ -1,0 +1,460 @@
+---
+title: "STAT 430 Final Project Presentation"
+author: "Andrew Hadad"
+date: "2023-04-01"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(ggplot2)
+library(GGally)
+library(car)
+```
+
+Predictor Variables:
+
+- Median Household Income (medincome)
+
+- Percentage of People aged 16 and over who are unemployed (pctunemployed16_over)
+
+- Percentage of People with Private Health Insurance (pctprivatecoverage)
+
+- Percentage of People with Public Health Insurance (pctpubliccoverage)
+
+
+Response Variable:
+
+- Number of Deaths per 100K Individuals (target_deathrate)
+
+
+Research Question: What effect does the median household income, percentage of unemployed people who are 16 years of age or older, percentage of people with private health inurance, and percentage of people with public health insurance have on a county's deathrate?
+
+```{r Reading in cancer dataset}
+cancer <- read.csv("cancer_reg.csv")
+
+research_model <- cancer %>%
+  select(medincome, pctprivatecoverage, pctunemployed16_over, pctpubliccoverage, target_deathrate)
+```
+
+Scatterplots of target_deathrate vs. medincome and target_deathrate vs. log(medincome)
+```{r}
+deathrate_vs_medincome <- ggplot(research_model, aes(medincome, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Median Income") +
+  labs(x = "Median Income", y = "Death Rate")
+deathrate_vs_medincome
+
+deathrate_vs_logmedincome <- ggplot(research_model, aes(log(medincome), target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Median Income (Transformed)") +
+  labs(x = "Log(Median Income)", y = "Death Rate")
+deathrate_vs_logmedincome
+```
+
+Residual plots of Median Income and Log(Median Income)
+```{r}
+medincome_fit <- lm(target_deathrate ~ medincome, data = research_model)
+residual_medincome <- resid(medincome_fit)
+resid_medincome <- ggplot(research_model, aes(fitted(medincome_fit), residual_medincome)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual Plot for Median Income") +
+  labs(x = "Median Income", y = "Residuals")
+resid_medincome
+
+logmedincome_fit <- lm(target_deathrate ~ log(medincome), data = research_model)
+residual_logmedincome <- resid(logmedincome_fit)
+resid_logmedincome <- ggplot(research_model, aes(fitted(logmedincome_fit), residual_logmedincome)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual Plot for Median Income (Transformed)") +
+  labs(x = "Log(Median Income)", y = "Residuals")
+resid_logmedincome
+```
+
+Correlations of Death rate vs. Median Income and Death rate vs. Log(Median Income)
+```{r Correlations}
+cor(research_model$target_deathrate, research_model$medincome)
+cor(research_model$target_deathrate, log(research_model$medincome))
+```
+
+Hypothesis testing for Death rate vs. Median Income and Death rate vs. Log(Median Income)
+```{r Hypothesis Testing}
+t.test(research_model$target_deathrate, research_model$medincome)
+t.test(research_model$target_deathrate, log(research_model$medincome))
+```
+
+Histograms for Median Income and Log(Median Income)
+```{r Histograms}
+hist_medincome <- ggplot(research_model, aes(medincome)) +
+  geom_histogram() +
+  ggtitle("Histogram of Median Income") +
+  xlab("Median Income")
+hist_medincome
+
+hist_logmedincome <- ggplot(research_model, aes(log(medincome))) +
+  geom_histogram() +
+  ggtitle("Histogram of Log(Median Income)") +
+  xlab("Log(Median Income)")
+hist_logmedincome
+```
+
+Scatterplots of target_deathrate vs. pctunemployed16_over and target_deathrate vs. log(pctunemployed16_over)
+```{r}
+deathrate_vs_pctunemp16over <- ggplot(research_model, aes(pctunemployed16_over, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage Unemployed 16+") +
+  labs(x = "Percentage Unemployed Aged 16 or Older", y = "Death Rate")
+deathrate_vs_pctunemp16over
+
+deathrate_vs_logpctunemp16over <- ggplot(research_model, aes(log(pctunemployed16_over), target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Log(Percentage Unemployed 16+)") +
+  labs(x = "Log(Percentage Unemployed 16+)", y = "Death Rate")
+deathrate_vs_logpctunemp16over
+```
+
+Residual plots of Percentage of People Aged 16 and Older
+```{r Residual Plots}
+pctunemp16over_fit <- lm(target_deathrate ~ pctunemployed16_over, data = research_model)
+residual_pctunemp16over <- resid(pctunemp16over_fit)
+resid_pctunemp16over <- ggplot(research_model, aes(fitted(pctunemp16over_fit), residual_pctunemp16over)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual Plot for PCT Unemployed 16+") +
+  labs(x = "PCT Unemployed 16+", y = "Residuals")
+resid_pctunemp16over
+
+logpctunemp16over_fit <- lm(target_deathrate ~ log(pctunemployed16_over), data = research_model)
+residual_logpctunemp16over <- resid(logpctunemp16over_fit)
+resid_logpctunemp16over <- ggplot(research_model, aes(fitted(logpctunemp16over_fit), residual_logpctunemp16over)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual Plot for Log(PCT Unemployed 16+)") +
+  labs(x = "Log(PCT Unnemployed 16+)", y = "Residuals")
+resid_logpctunemp16over
+```
+
+Correlations of target_deathrate vs. pctunemployed16_over and target_deathrate vs. log(pctunemployed16_over)
+```{r}
+cor(research_model$target_deathrate, research_model$pctunemployed16_over)
+cor(research_model$target_deathrate, log(research_model$pctunemployed16_over))
+```
+
+Hypothesis testing for target_deathrate vs. pctunemployed16_over and target_deathrate vs. log(pctunemployed16_over)
+```{r}
+t.test(research_model$target_deathrate, research_model$pctunemployed16_over)
+t.test(research_model$target_deathrate, log(research_model$pctunemployed16_over))
+```
+
+Histograms for pctunemployed16_over and log(pctunemployed16_over)
+```{r}
+hist_pctunemployed16_over <- ggplot(research_model, aes(pctunemployed16_over)) +
+  geom_histogram() +
+  ggtitle("Histogram of Percentage Unemployed 16+") +
+  xlab("Percentage Unemployed 16+")
+hist_pctunemployed16_over
+
+hist_logpctunemployed16_over <- ggplot(research_model, aes(log(pctunemployed16_over))) +
+  geom_histogram() +
+  ggtitle("Histogram of Log(Percentage Unemployed 16+)") +
+  xlab("Log(Percentage Unemployed 16+)")
+hist_logpctunemployed16_over
+```
+
+Scatterplot of Death Rate vs. Percentage of Private Coverage
+```{r}
+deathrate_vs_pctprivate <- ggplot(research_model, aes(pctprivatecoverage, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage of Private Coverage") +
+  labs(x = "Percentage of Private Coverage", y = "Death Rate")
+deathrate_vs_pctprivate
+```
+
+Residual plot of Percentage of Private Coverage
+```{r}
+pctprivatecoverage_fit <- lm(target_deathrate ~ pctprivatecoverage, data = research_model)
+residual_pctprivatecoverage <- resid(pctprivatecoverage_fit)
+resid_pctprivatecoverage <- ggplot(research_model, aes(fitted(pctprivatecoverage_fit), residual_pctprivatecoverage)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual Plot for Percentage of Private Coverage") +
+  labs(x = "Percentage of Private Coverage", y = "Residuals")
+resid_pctprivatecoverage
+```
+
+Correlation of target_deathrate vs. pctprivatecoverage
+```{r}
+cor(research_model$target_deathrate, research_model$pctprivatecoverage)
+```
+
+Hypothesis testing for target_deathrate vs. pctprivatecoverage
+```{r Hypothesis Test}
+t.test(research_model$target_deathrate, research_model$pctprivatecoverage)
+```
+
+Histogram for Private Coverage Insurance
+```{r Histogram}
+hist_pctprivatecoverage <- ggplot(research_model, aes(pctprivatecoverage)) +
+  geom_histogram() +
+  ggtitle("Histogram of Private Coverage Percentage") +
+  xlab("Private Coverage Percentage")
+hist_pctprivatecoverage
+```
+
+Scatterplot of Death Rate vs. Percentage of Public Coverage
+```{r Scatterplot}
+deathrate_vs_pctpublic <- ggplot(research_model, aes(pctpubliccoverage, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage of Public Coverage") +
+  labs(x = "Percentage of Public Coverage", y = "Death Rate")
+deathrate_vs_pctpublic
+```
+
+Residual plot of Percentage of Public Coverage
+```{r Residual Plot}
+pctpubliccoverage_fit <- lm(target_deathrate ~ pctpubliccoverage, data = research_model)
+residual_pctpubliccoverage <- resid(pctpubliccoverage_fit)
+resid_pctpubliccoverage <- ggplot(research_model, aes(fitted(pctpubliccoverage_fit), residual_pctpubliccoverage)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  ggtitle("Residual plot for Percentage of Public Coverage") +
+  labs(x = "Percentage of Public Coverage", y = "Residuals")
+resid_pctpubliccoverage
+```
+
+Correlation of target_deathrate vs. pctpubliccoverage
+```{r Correlation}
+cor(research_model$target_deathrate, research_model$pctpubliccoverage)
+```
+
+Hypothesis testing for target_deathrate vs. pctpubliccoverage
+```{r}
+t.test(research_model$target_deathrate, research_model$pctpubliccoverage)
+```
+
+Histogram for Public Coverage Insurance
+```{r }
+hist_pctpubliccoverage <- ggplot(research_model, aes(pctpubliccoverage)) +
+  geom_histogram() +
+  ggtitle("Histogram of Public Coverage Percentage") +
+  xlab("Public Coverage Percentage")
+hist_pctpubliccoverage
+```
+
+Correlation Matrix 
+```{r Correlation Matrix}
+cor(research_model)
+```
+
+Correlation Plot
+```{r Correlation Plot}
+ggcorr(research_model)
+```
+
+Linear Regression Model
+```{r}
+research_fit <- lm(target_deathrate~log(medincome)+log(pctunemployed16_over)+pctprivatecoverage+pctpubliccoverage, data = research_model)
+summary(research_fit)
+```
+Linear Regression Equation:
+
+target_deathrate_hat = 570.848 - 40.702log(medincome) + 12.278log(pctunemployed16_over) + 0.174pctprivatecoverage + 0.26pctpubliccoverage
+
+Merging all predictor variables to create one whole master research model for analysis
+```{r Master Research Model}
+master_research_model <- cancer %>%
+  mutate(pctnocoverage = 100 - (pctprivatecoverage + pctpubliccoverage),
+         pctunioncoverage = pctprivatecoverage + pctpubliccoverage - pctnocoverage)
+
+master_research_model <- master_research_model %>%
+  select(pcths18_24, pctemployed16_over, percentmarried, incidencerate, target_deathrate, medincome, pctprivatecoverage, pctpubliccoverage, pctunemployed16_over, povertypercent, studypercap, pctnocoverage, pctunioncoverage)
+```
+
+Linear Regression Model including pctnocoverage
+```{r Linear Regression }
+master_research_fit_no <- lm(target_deathrate~pcths18_24+log(pctemployed16_over)+incidencerate+log(medincome)+pctunemployed16_over+pctnocoverage, data = master_research_model)
+
+summary(master_research_fit_no)
+```
+
+Linear Regression Model including pctunioncoverage
+```{r Linear  Model}
+master_research_fit_union <- lm(target_deathrate~pcths18_24+log(pctemployed16_over)+incidencerate+log(medincome)+pctunemployed16_over+pctunioncoverage, data = master_research_model)
+
+summary(master_research_fit_union)
+```
+
+Analysis of Variance including pctnocoverage
+```{r ANOVA}
+anova(master_research_fit_no)
+```
+
+Analysis of Variance including pctunioncoverage
+```{r }
+anova(master_research_fit_no)
+```
+
+Variance Inflation Factors including pctnocoverage
+```{r VIF}
+vif(master_research_fit_no)
+```
+
+Variance Inflation Factors including pctunioncoverage
+```{r}
+vif(master_research_fit_union)
+```
+
+Model Diagnosis including pctnocoverage
+```{r Model Diagnosis}
+plot(master_research_fit_no)
+```
+
+Model Diagnosis including pctunioncoverage
+```{r}
+plot(master_research_fit_union)
+```
+
+Scatterplot of target_deathrate vs. pcths18_24
+```{r }
+deathrate_vs_pcths18_24 <- ggplot(master_research_model, aes(pcths18_24, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage High School Age 18-24") +
+  labs(x = "Percentage High School Age 18-24", y = "Death Rate")
+deathrate_vs_pcths18_24
+```
+
+Scatterplot of target_deathrate vs. log(pctemployed16_over)
+```{r }
+deathrate_vs_logpctemployed16over <- ggplot(master_research_model, aes(log(pctemployed16_over), target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percent Employed 16+ (Transformed)") +
+  labs(x = "Log(Percentage Employed Aged 16 and Over)", y = "Death Rate")
+deathrate_vs_logpctemployed16over
+```
+
+Scatterplot of target_deathrate vs. percentmarried
+```{r }
+deathrate_vs_percentmarried <- ggplot(master_research_model, aes(percentmarried, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percent Married") +
+  labs(x = "Percent Married", y = "Death Rate")
+deathrate_vs_percentmarried
+```
+
+Scatterplot of target_deathrate vs. incidencerate
+```{r }
+deathrate_vs_incidencerate <- ggplot(master_research_model, aes(incidencerate, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Incidence Rate") +
+  labs(x = "Incidence Rate", y = "Death Rate")
+deathrate_vs_incidencerate
+```
+
+Scatterplot of target_deathrate vs. log(povertypercent)
+```{r }
+deathrate_vs_logpovertypercent <- ggplot(master_research_model, aes(log(povertypercent), target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Poverty Percentage (Transformed)") +
+  labs(x = "Log(Poverty Percentage)", y = "Death Rate")
+deathrate_vs_logpovertypercent
+```
+
+Scatterplot of target_deathrate vs. studypercap
+```{r }
+deathrate_vs_studypercap <- ggplot(master_research_model, aes(studypercap, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Study Per Capita") +
+  labs(x = "Study Per Capita", y = "Death Rate")
+deathrate_vs_studypercap
+```
+
+Scatterplot of target_deathrate vs. pctnocoverage
+```{r }
+deathrate_vs_pctnocoverage <- ggplot(master_research_model, aes(pctnocoverage, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage of Both Coverage") +
+  labs(x = "Percentage of Both Coverage", y = "Death Rate")
+deathrate_vs_pctnocoverage
+```
+
+Scatterplot of target_deathrate vs. pctunioncoverage
+```{r }
+deathrate_vs_pctunioncoverage <- ggplot(master_research_model, aes(pctunioncoverage, target_deathrate)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  ggtitle("Death Rate vs. Percentage of Either Coverage") +
+  labs(x = "Percentage of Either Coverage", y = "Death Rate")
+deathrate_vs_pctunioncoverage
+```
+
+Linear Regression Model Between target_deathrate and pcths18_24
+```{r }
+lm_deathrate_pcths18_24 <- lm(target_deathrate ~ pcths18_24, data = master_research_model)
+summary(lm_deathrate_pcths18_24)
+```
+
+Linear Regression Model Between target_deathrate and log(pctemployed16_over)
+```{r}
+lm_deathrate_logpctemployed16_over <- lm(target_deathrate ~ log(pctemployed16_over), data = master_research_model)
+summary(lm_deathrate_logpctemployed16_over)
+```
+
+Linear Regression Model Between target_deathrate and incidencerate
+```{r}
+lm_deathrate_incidencerate <- lm(target_deathrate ~ incidencerate, data = master_research_model)
+summary(lm_deathrate_incidencerate)
+```
+
+Linear Regression Model Between target_deathrate and log(medincome)
+```{r}
+lm_deathrate_logmedincome <- lm(target_deathrate ~ log(medincome), data = master_research_model)
+summary(lm_deathrate_logmedincome)
+```
+
+Linear Regression Model Between target_deathrate and pctprivatecoverage
+```{r}
+lm_deathrate_pctprivatecoverage <- lm(target_deathrate ~ pctprivatecoverage, data = master_research_model)
+summary(lm_deathrate_pctprivatecoverage)
+```
+
+Linear Regression Model Between target_deathrate and pctpubliccoverage
+```{r}
+lm_deathrate_pctpubliccoverage <- lm(target_deathrate ~ pctpubliccoverage, data = master_research_model)
+summary(lm_deathrate_pctpubliccoverage)
+```
+
+Linear Regression Model Between target_deathrate and pctunemployed16_over
+```{r}
+lm_deathrate_pctunemployed16_over <- lm(target_deathrate ~ pctunemployed16_over, data = master_research_model)
+summary(lm_deathrate_pctunemployed16_over)
+```
+
+Linear Regression Model Between target_deathrate and pctnocoverage
+```{r}
+lm_deathrate_pctnocoverage <- lm(target_deathrate ~ pctnocoverage, data = master_research_model)
+summary(lm_deathrate_pctnocoverage)
+```
+
+Linear Regression Model Between target_deathrate and pctunioncoverage
+```{r}
+lm_deathrate_pctunioncoverage <- lm(target_deathrate ~ pctunioncoverage, data = master_research_model)
+summary(lm_deathrate_pctunioncoverage)
+```
